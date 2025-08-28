@@ -1,0 +1,5 @@
+// Send booking confirmation email
+    emailjs.send('service_pg88oq4', 'template_uj096nj', bookingDetails, '2kKr3kB0Aic386bwh')
+
+// Send order confirmation email
+    emailjs.send('service_pg88oq4', 'template_29ai8ti', emailData, '2kKr3kB0Aic386bwh')

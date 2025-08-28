@@ -11,6 +11,7 @@ import { AdminLogin } from './components/AdminLogin';
 import { CartModal } from './components/CartModal';
 import { CheckoutModal } from './components/CheckoutModal';
 import { Icon } from './components/Icon';
+import emailjs from '@emailjs/browser';
 import './App.css';
 
 export default function App() {
@@ -26,7 +27,7 @@ export default function App() {
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // State for mobile nav
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
@@ -42,17 +43,21 @@ export default function App() {
   const handleAdd = async (collectionName, data) => await addDoc(collection(db, collectionName), data);
   const handleUpdate = async (collectionName, id, data) => await updateDoc(doc(db, collectionName, id), data);
   const handleDelete = async (collectionName, id) => { if (window.confirm("Are you sure you want to permanently delete this item?")) { await deleteDoc(doc(db, collectionName, id)); } };
-  const handleBookingSubmit = async (bookingDetails) => { await addDoc(collection(db, "bookings"), { ...bookingDetails, status: 'Pending' }); setSelectedService(null); setNotification(`Booking confirmed!`); setTimeout(() => setNotification(''), 3000); };
+  
+  const handleBookingSubmit = async (bookingDetails) => {
+    await addDoc(collection(db, "bookings"), { ...bookingDetails, status: 'Pending' });
+    emailjs.send('YOUR_SERVICE_ID', 'YOUR_BOOKING_TEMPLATE_ID', bookingDetails, 'YOUR_PUBLIC_KEY');
+    setSelectedService(null); 
+    setNotification(`Booking confirmed! A confirmation email has been sent.`); 
+    setTimeout(() => setNotification(''), 3000); 
+  };
+
   const handleStatusChange = async (id, status) => await updateDoc(doc(db, "bookings", id), { status });
   
-  const handleNavClick = (targetView, anchor = null) => { 
-    setIsMobileMenuOpen(false); // Close mobile menu on click
-    if (view === 'home' && targetView === 'home' && anchor) { 
-      document.querySelector(anchor)?.scrollIntoView({ behavior: 'smooth' }); 
-    } else { 
-      setView(targetView); 
-      window.scrollTo(0, 0); 
-    } 
+  const handleNavClick = (targetView) => { 
+    setIsMobileMenuOpen(false);
+    setView(targetView); 
+    window.scrollTo(0, 0); 
   };
 
   const handleAddToCart = (product) => {
@@ -71,13 +76,23 @@ export default function App() {
     setCartItems(prev => prev.filter(item => item.id !== productId));
   };
   const handleProceedToCheckout = () => { setIsCartOpen(false); setIsCheckoutOpen(true); };
+  
   const handlePlaceOrder = async (customerDetails) => {
     if (cartItems.length === 0) return;
     const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    await addDoc(collection(db, "orders"), { customer: customerDetails, items: cartItems, total, status: 'Pending', createdAt: serverTimestamp() });
+    const newOrderRef = await addDoc(collection(db, "orders"), { customer: customerDetails, items: cartItems, total, status: 'Pending', createdAt: serverTimestamp() });
+    
+    const emailData = {
+      ...customerDetails,
+      orderId: newOrderRef.id.substring(0, 8),
+      items: cartItems.map(item => `${item.name} (x${item.quantity}) - $${(item.price * item.quantity).toFixed(2)}`).join('\n'),
+      total: total.toFixed(2),
+    };
+
+    emailjs.send('YOUR_SERVICE_ID', 'YOUR_ORDER_TEMPLATE_ID', emailData, 'YOUR_PUBLIC_KEY');
     setCartItems([]);
     setIsCheckoutOpen(false);
-    setNotification('Order placed successfully! Thank you.');
+    setNotification('Order placed successfully! A confirmation email has been sent.');
     setTimeout(() => setNotification(''), 3000);
   };
 
@@ -119,35 +134,33 @@ export default function App() {
             {currentUser ? (
               <>
                 <button onClick={() => handleNavClick('admin')} className="nav-button admin-button">Admin</button>
-                <button onClick={handleLogout} className="nav-button">Logout</button>
+                <button onClick={handleLogout} className="nav-button admin-logout-button">Logout</button>
               </>
             ) : (
               <button onClick={() => handleNavClick('admin')} className="nav-button admin-button">Admin Login</button>
             )}
+            <button className="mobile-menu-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+              <Icon name="x" style={{ height: '28px', width: '28px', display: isMobileMenuOpen ? 'block' : 'none' }} />
+              <svg style={{ height: '28px', width: '28px', display: isMobileMenuOpen ? 'none' : 'block' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
           </div>
-
-          <button className="mobile-menu-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-            ☰
-          </button>
         </div>
       </header>
       
-      {isMobileMenuOpen && (
-        <div className="mobile-nav">
-          <button onClick={() => handleNavClick('home')} className="nav-button">Home</button>
-          <button onClick={() => handleNavClick('services')} className="nav-button">Services</button>
-          <button onClick={() => handleNavClick('products')} className="nav-button">Products</button>
-          <hr />
-          {currentUser ? (
-            <>
-              <button onClick={() => handleNavClick('admin')} className="nav-button">Admin</button>
-              <button onClick={handleLogout} className="nav-button">Logout</button>
-            </>
-          ) : (
-            <button onClick={() => handleNavClick('admin')} className="nav-button">Admin Login</button>
-          )}
-        </div>
-      )}
+      <div className={`mobile-nav ${isMobileMenuOpen ? 'open' : ''}`}>
+        <button onClick={() => handleNavClick('home')} className="nav-button">Home</button>
+        <button onClick={() => handleNavClick('services')} className="nav-button">Services</button>
+        <button onClick={() => handleNavClick('products')} className="nav-button">Products</button>
+        <hr />
+        {currentUser ? (
+          <>
+            <button onClick={() => handleNavClick('admin')} className="nav-button">Admin</button>
+            <button onClick={handleLogout} className="nav-button">Logout</button>
+          </>
+        ) : (
+          <button onClick={() => handleNavClick('admin')} className="nav-button">Admin Login</button>
+        )}
+      </div>
 
       <main className={view !== 'home' ? 'container main-content' : ''}>{renderContent()}</main>
       {selectedService && <BookingForm service={selectedService} onClose={() => setSelectedService(null)} onSubmit={handleBookingSubmit} />}
