@@ -118,7 +118,7 @@ export default function App() {
     <div className="app-container">
       <header className="app-header">
         <div className="container header-content">
-          <h1 className="header-title" onClick={() => handleNavClick('home')}>PC Pro</h1>
+          <h1 className="header-title" onClick={() => handleNavClick('home')}>Badshah Computer</h1>
           
           <nav className="desktop-nav">
             <button onClick={() => handleNavClick('home')} className={`nav-button ${view === 'home' ? 'active' : ''}`}>Home</button>
@@ -167,7 +167,7 @@ export default function App() {
       {isCartOpen && <CartModal cartItems={cartItems} onClose={() => setIsCartOpen(false)} onUpdateQuantity={handleUpdateQuantity} onRemoveItem={handleRemoveItem} onProceedToCheckout={handleProceedToCheckout} />}
       {isCheckoutOpen && <CheckoutModal onClose={() => setIsCheckoutOpen(false)} onConfirmOrder={handlePlaceOrder} />}
       {notification && <div className="notification">{notification}</div>}
-      <footer className="app-footer"><div className="container"><p>&copy; {new Date().getFullYear()} PC Pro Services. All Rights Reserved.</p><p className="text-sm">123 Tech Avenue, Silicon Valley, CA 94000</p></div></footer>
+      <footer className="app-footer"><div className="container"><p>&copy; {new Date().getFullYear()} Badshah Computer Services. All Rights Reserved.</p><p className="text-sm">123 Tech Avenue, Silicon Valley, CA 94000</p></div></footer>
     </div>
   );
 }

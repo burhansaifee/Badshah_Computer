@@ -106,7 +106,7 @@ export function Home({ setView }) {
       {/* ===== Features Section ===== */}
       <section id="features" className="features-section container">
         <div className="section-header animate-on-scroll">
-            <h2>Why Choose PC Pro?</h2>
+            <h2>Why Choose Badshah Computer?</h2>
             <p>We're dedicated to providing the best service and solutions for our customers.</p>
         </div>
         <div className="features-grid">
@@ -135,9 +135,9 @@ export function Home({ setView }) {
             <img src="https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?q=80&w=1974&auto-format&fit=crop" alt="Technician working on a computer"/>
           </div>
           <div className="about-content animate-on-scroll from-right">
-            <h2>About PC Pro Services</h2>
+            <h2>About Badshah Computer Services</h2>
             <p>
-              Founded in 2010, PC Pro Services has been the go-to expert for computer repair, custom builds, and IT solutions in the Silicon Valley area. Our mission is to provide reliable, affordable, and high-quality tech support to our community.
+              Founded in 2010, Badshah Computer has been the go-to expert for computer repair, custom builds, and IT solutions in the Silicon Valley area. Our mission is to provide reliable, affordable, and high-quality tech support to our community.
             </p>
             <p>
               Our certified technicians are passionate about technology and dedicated to solving your problems, big or small. We believe in building long-lasting relationships with our clients through transparent pricing and honest advice.
